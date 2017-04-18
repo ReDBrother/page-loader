@@ -37,8 +37,4 @@ describe('Loading page', () => {
       });
     });
   });
-
-  afterEach(() => {
-    fs.rmdirSync(output);
-  });
 });
