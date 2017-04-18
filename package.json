@@ -1,0 +1,44 @@
+{
+  "name": "project-lvl3-s71",
+  "version": "0.0.1",
+  "main": "dist/index.js",
+  "bin": {
+    "gendiff": "dist/bin/project.js"
+  },
+  "scripts": {
+    "test": "jest",
+    "babel-node": "babel-node",
+    "eslint": "eslint",
+    "build": "NODE_ENV=production babel src --out-dir dist --source-maps inline",
+    "prepublish": "npm run build"
+  },
+  "jest": {
+    "testPathIgnorePatterns": [
+      "node_modules",
+      "__tests_/__fixtures__/"
+    ]
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ReDBrother/project-lvl3-s71.git"
+  },
+  "author": "Dmitriy Bataev",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/ReDBrother/project-lvl3-s71/issues"
+  },
+  "homepage": "https://github.com/ReDBrother/project-lvl3-s71#readme",
+  "devDependencies": {
+    "babel-cli": "*",
+    "babel-core": "*",
+    "babel-preset-env": "*",
+    "babel-preset-stage-0": "*",
+    "eslint": "*",
+    "eslint-config-airbnb-base": "*",
+    "eslint-plugin-import": "*",
+    "babel-eslint": "*",
+    "jest": "*"
+  },
+  "dependencies": {
+  }
+}
