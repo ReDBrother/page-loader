@@ -29,12 +29,9 @@ describe('Loading page', () => {
     const pageUrl = `${host}/page`;
     loadPage(pageUrl, { output }).then((result) => {
       fs.exists(result).then((exists) => {
-        if (exists) {
-          done();
-        }
-        
-        done.fail();
-      });
-    });
+        expect(exists).toBe(true);
+        done();
+      })
+    }).catch(done.fail);
   });
 });
