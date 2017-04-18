@@ -3,7 +3,7 @@
   "version": "0.0.1",
   "main": "dist/index.js",
   "bin": {
-    "gendiff": "dist/bin/project.js"
+    "page-loader": "dist/bin/page-loader.js"
   },
   "scripts": {
     "test": "jest",
@@ -40,5 +40,8 @@
     "jest": "*"
   },
   "dependencies": {
+    "axios": "*",
+    "nock": "*",
+    "mz": "*"
   }
 }
