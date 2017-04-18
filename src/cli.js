@@ -11,8 +11,9 @@ export default () => {
   const pwd = process.env.PWD;
 
   program
-    .description('')
+    .description('Downloading the specified address from the web.')
     .option('--output [path]', 'The output directory for additional file', pwd);
 
   program.parse(process.argv);
 };
+
