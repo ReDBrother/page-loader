@@ -1,7 +1,7 @@
 install:
 	npm install
 start:
-	npm run babel-node -- src/bin/page-loader.js
+	npm run babel-node -- src/bin/page-loader.js https://hexlet.io/courses
 test:
 	npm test
 publish:
