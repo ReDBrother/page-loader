@@ -11,12 +11,10 @@ const getName = (currentUrl) => {
 
 export default (pageUrl, keys) => {
   const { output } = keys;
-  const result = axios.get(pageUrl).then((response) => {
+  return axios.get(pageUrl).then((response) => {
     const name = `${getName(pageUrl)}.html`;
     const filePath = path.resolve(output, name);
     fs.writeFileSync(filePath, response.data);
     return filePath;
   });
-
-  return result;
 };
