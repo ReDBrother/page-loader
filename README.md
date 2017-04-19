@@ -3,7 +3,7 @@
 
 ## Intall
 ```sh
-$ npm install rdb-page-loader
+$ npm install -g rdb-page-loader
 ```
 
 ## Usage
