@@ -1,5 +1,5 @@
 {
-  "name": "project-lvl3-s71",
+  "name": "rdb-page-loader",
   "version": "0.0.1",
   "main": "dist/index.js",
   "bin": {
