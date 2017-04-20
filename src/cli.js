@@ -8,9 +8,13 @@ export default () => {
     .arguments('<url>')
     .action((url, options) => {
       loadPage(url, options)
-        .then((fileName) => {
+        .then(([pageName, ...filesInfo]) => {
+          filesInfo.forEach((item) => {
+            const flag = item.success ? '\u2714' : '\u2715';
+            console.log(`${flag} ${item.url}`);
+          });
           console.log();
-          console.log(`Page was downloaded as '${fileName}'`);
+          console.log(`Page was downloaded as '${pageName}'`);
         }).catch(console.error);
     });
 

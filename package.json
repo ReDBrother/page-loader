@@ -1,6 +1,6 @@
 {
   "name": "rdb-page-loader",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "main": "dist/index.js",
   "bin": {
     "page-loader": "dist/bin/page-loader.js"
@@ -43,6 +43,7 @@
     "axios": "*",
     "nock": "*",
     "mz": "*",
-    "commander": "*"
+    "commander": "*",
+    "cheerio": "*"
   }
 }
