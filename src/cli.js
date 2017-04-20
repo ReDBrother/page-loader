@@ -6,7 +6,13 @@ export default () => {
   program
     .version(version)
     .arguments('<url>')
-    .action(loadPage);
+    .action((url, options) => {
+      loadPage(url, options)
+        .then((fileName) => {
+          console.log();
+          console.log(`Page was downloaded as '${fileName}'`);
+        }).catch(console.error);
+    });
 
   const pwd = process.env.PWD;
 

@@ -1,6 +1,6 @@
 {
   "name": "rdb-page-loader",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "main": "dist/index.js",
   "bin": {
     "page-loader": "dist/bin/page-loader.js"
@@ -15,7 +15,7 @@
   "jest": {
     "testPathIgnorePatterns": [
       "node_modules",
-      "__tests_/__fixtures__/"
+      "__tests__/__fixtures__/"
     ]
   },
   "repository": {

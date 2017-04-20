@@ -7,5 +7,5 @@ test:
 publish:
 	npm publish
 lint:
-	npm run eslint -- src
+	npm run eslint -- src __tests__
 
