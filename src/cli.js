@@ -10,7 +10,7 @@ export default () => {
       loadPage(url, options)
         .then(([pageName, ...filesInfo]) => {
           filesInfo.forEach((item) => {
-            const flag = item.success ? '\u2714' : '\u2715';
+            const flag = '\u2714';
             console.log(`${flag} ${item.url}`);
           });
           console.log();

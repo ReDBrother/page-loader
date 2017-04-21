@@ -25,18 +25,15 @@ const getTagsSrc = (data) => {
 
 const getFileName = (str) => {
   const { dir, name, ext } = path.parse(str);
-  if (ext !== '') {
-    const newStr = path.join(dir, name);
-    const result = newStr.replace(/\W/g, '-');
-    return `${result}${ext}`;
-  }
-  return str.replace(/\W/g, '-');
+  const newStr = path.join(dir, name);
+  const result = newStr.replace(/\W/g, '-');
+  return `${result}${ext}`;
 };
 
 const getPageName = (currentUrl) => {
   const { hostname, pathname } = url.parse(currentUrl);
   const str = `${hostname}${pathname}`;
-  return getFileName(str);
+  return str.replace(/\W/g, '-');
 };
 
 const writeFile = (fileUrl, output) => {
@@ -85,7 +82,6 @@ export default (pageUrl, keys) => {
       const srcUrl = url.resolve(pageUrl, link);
       const filePath = path.resolve(dirPath, fileName);
       return writeFile(srcUrl, filePath).then(() => Promise.resolve({
-        success: true,
         url: srcUrl,
         fileName,
       }));
