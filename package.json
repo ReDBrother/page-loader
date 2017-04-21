@@ -1,6 +1,6 @@
 {
   "name": "rdb-page-loader",
-  "version": "0.1.2",
+  "version": "0.1.4",
   "main": "dist/index.js",
   "bin": {
     "page-loader": "dist/bin/page-loader.js"

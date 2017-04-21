@@ -8,7 +8,7 @@ export default () => {
     .arguments('<url>')
     .action((url, options) => {
       loadPage(url, options)
-        .then(([pageName, ...filesInfo]) => {
+        .then(([pageName, filesInfo]) => {
           filesInfo.forEach((item) => {
             const flag = '\u2714';
             console.log(`${flag} ${item.url}`);

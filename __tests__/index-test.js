@@ -46,7 +46,7 @@ describe('Loading page', () => {
 
   it('test loading page', (done) => {
     const pageUrl = `${host}/page`;
-    loadPage(pageUrl, { output }).then(([htmlName, ...assets]) => {
+    loadPage(pageUrl, { output }).then(([htmlName, assets]) => {
       expect(htmlName).toBe('hexlet-io-page.html');
       const filePath = `${output}${path.sep}${htmlName}`;
       const data = fs.readFileSync(filePath, 'utf8');
