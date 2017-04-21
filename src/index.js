@@ -15,6 +15,37 @@ const tags = [
   { name: 'img', attr: 'src' },
 ];
 
+const getFileName = (str) => {
+  const { dir, name, ext } = path.parse(str);
+  const newStr = path.join(dir, name);
+  const result = newStr.replace(/\W/g, '-');
+  return `${result}${ext}`;
+};
+
+const getPageName = (currentUrl) => {
+  const { hostname, pathname } = url.parse(currentUrl);
+  const str = `${hostname}${pathname}`;
+  return str.replace(/\W/g, '-');
+};
+
+const rewriteTags = (data, dirName) => {
+  const newData = tags.reduce((acc, tag) => {
+    const $ = cheerio.load(acc);
+    $(tag.name).each((i, el) => {
+      const oldSrc = $(el).attr(tag.attr);
+      if (oldSrc) {
+        const fileName = getFileName(oldSrc);
+        const newSrc = path.join(dirName, fileName);
+        $(el).attr(tag.attr, newSrc);
+      }
+    });
+    debug('rewrite src for %s tags', tag.name);
+    return $.html();
+  }, data);
+
+  return newData;
+};
+
 const getTagsSrc = (data) => {
   debug('start getting tags');
   const result = tags.reduce((acc, tag) => {
@@ -30,28 +61,38 @@ const getTagsSrc = (data) => {
   return result;
 };
 
-const getFileName = (str) => {
-  const { dir, name, ext } = path.parse(str);
-  const newStr = path.join(dir, name);
-  const result = newStr.replace(/\W/g, '-');
-  return `${result}${ext}`;
-};
-
-const getPageName = (currentUrl) => {
-  const { hostname, pathname } = url.parse(currentUrl);
-  const str = `${hostname}${pathname}`;
-  return str.replace(/\W/g, '-');
-};
-
-const writeFile = (fileUrl, output) => {
+const loadFile = (fileUrl) => {
   const result = axios({
     method: 'get',
     url: fileUrl,
     responseType: 'stream',
-  }).then((response) => {
-    debugLoading('load file %s', path.basename(fileUrl));
-    response.data.pipe(fs.createWriteStream(output));
   });
+
+  return result;
+};
+
+const loadAssets = (currentUrl, dirPath, links) => {
+  const result = fs.mkdir(dirPath)
+      .then(() => {
+        debug('create folder');
+        return links.map((link) => {
+          const fileName = getFileName(link);
+          const srcUrl = url.resolve(currentUrl, link);
+          const filePath = path.resolve(dirPath, fileName);
+          return loadFile(srcUrl)
+            .then((response) => {
+              debugLoading('load file %s', path.basename(srcUrl));
+              response.data.pipe(fs.createWriteStream(filePath));
+            })
+            .then(() => {
+              debugSaving('save file %s', path.basename(fileName));
+              return Promise.resolve({
+                url: srcUrl,
+                fileName,
+              });
+            });
+        });
+      });
 
   return result;
 };
@@ -63,48 +104,17 @@ export default (pageUrl, keys) => {
   const htmlName = `${pageName}.html`;
   return axios.get(pageUrl).then((response) => {
     debug('load page %s', pageUrl);
-    const mkdir = fs.mkdir(dirPath)
-      .then(() => {
-        debug('create folder');
-        return Promise.resolve(response.data);
-    });
-    return mkdir;
-  }).then((data) => {
     debug('start rewrite html page');
-    const newData = tags.reduce((acc, tag) => {
-      const $ = cheerio.load(acc);
-      $(tag.name).each((i, el) => {
-        const oldSrc = $(el).attr(tag.attr);
-        if (oldSrc) {
-          const fileName = getFileName(oldSrc);
-          const newSrc = path.join(`${pageName}_files`, fileName);
-          $(el).attr(tag.attr, newSrc);
-        }
-      });
-      debug('rewrite src for %s tags', tag.name);
-      return $.html();
-    }, data);
-
+    const newData = rewriteTags(response.data, `${pageName}_files`);
     const pagePath = path.resolve(output, htmlName);
     const loadingPage = fs.writeFile(pagePath, newData, 'utf8')
       .then(() => {
         debugSaving('save page %s', pageUrl);
-        return Promise.resolve(htmlName)
+        return Promise.resolve(htmlName);
       });
 
-    const links = getTagsSrc(data);
-    const loadingAssets = links.map((link) => {
-      const fileName = getFileName(link);
-      const srcUrl = url.resolve(pageUrl, link);
-      const filePath = path.resolve(dirPath, fileName);
-      return writeFile(srcUrl, filePath).then(() => {
-        debugSaving('save file %s', path.basename(fileName));
-        return Promise.resolve({
-          url: srcUrl,
-          fileName,
-        });
-      });
-    });
+    const links = getTagsSrc(response.data);
+    const loadingAssets = loadAssets(pageUrl, dirPath, links);
 
     return Promise.all([loadingPage, ...loadingAssets]);
   });
