@@ -6,7 +6,7 @@ import loadPage from '../src/';
 
 const tmpDir = os.tmpdir();
 const filePath1 = `${__dirname}/__fixtures__/page.html`;
-const filePath2 = `${__dirname}/__fixtures__/wrongPage.html`;
+const filePath2 = `${__dirname}/__fixtures__/link.html`;
 const assetPath1 = `${__dirname}/__fixtures__/assets/application.js`;
 const assetPath2 = `${__dirname}/__fixtures__/assets/link.ico`;
 const assetPath3 = `${__dirname}/__fixtures__/assets/image.jpg`;
@@ -25,7 +25,7 @@ const fileData1 = `<!DOCTYPE html>
 `;
 const host = 'http://hexlet.io';
 const pageUrl = `${host}/page`;
-const wrongPageUrl = `${host}/wrongPage`;
+const pageWithWrongLinkUrl = `${host}/link`;
 const wrongUrl = `${pageUrl}s`;
 
 describe('Loading page', () => {
@@ -36,7 +36,7 @@ describe('Loading page', () => {
     nock(host)
       .get('/page')
       .replyWithFile(200, filePath1)
-      .get('/wrongPage')
+      .get('/link')
       .replyWithFile(200, filePath2)
       .get('/assets/application.js')
       .reply(200, () => fs.createReadStream(assetPath1))
@@ -57,6 +57,7 @@ describe('Loading page', () => {
       const data = fs.readFileSync(filePath, 'utf8');
       expect(data).toBe(fileData1);
       assets.forEach((item) => {
+        expect(item.success).toBe(true);
         const assetPath = path.join(output, 'hexlet-io-page_files', item.fileName);
         const exists = fs.existsSync(assetPath);
         expect(exists).toBe(true);
@@ -74,11 +75,11 @@ describe('Loading page', () => {
   });
 
   it('test loading page with wrong link', (done) => {
-    loadPage(wrongPageUrl, { output }).then(done.fail)
-      .catch((err) => {
-        expect(err.status).toBe(404);
-        done();
-      });
+    loadPage(pageWithWrongLinkUrl, { output }).then(([htmlName, assets]) => {
+      expect(htmlName).toBe('hexlet-io-link.html');
+      const asset = assets[0];
+      expect(asset.success).toBe(false);
+    }).catch(done.fail).then(done);
   });
 
   it('test wrong url', (done) => {

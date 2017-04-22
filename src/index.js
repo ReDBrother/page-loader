@@ -79,8 +79,17 @@ const loadAssets = (currentUrl, dirPath, links) => {
       .then(() => {
         debugSaving('save file %s', path.basename(fileName));
         return {
+          success: true,
           url: srcUrl,
           fileName,
+        };
+      })
+      .catch((error) => {
+        debugSaving('file %s not saved', path.basename(srcUrl));
+        return {
+          success: false,
+          url: srcUrl,
+          error,
         };
       });
   });
