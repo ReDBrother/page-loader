@@ -20,8 +20,6 @@ export default () => {
                   const message = getErrorMessage(info.error);
                   task.skip(message);
                 }
-
-                return info
               }),
             };
           });
