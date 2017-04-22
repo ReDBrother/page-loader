@@ -6,7 +6,7 @@ const debug = createDebug('page-loader:errors');
 const getErrorMessageByCode = (err, options) => {
   switch (err.code) {
     case 'EACCES':
-      return `Permission denied for ${options.output} directory`;
+      return `Permission denied for ${err.path} file or directory`;
     case 'ECONNREFUSED':
       return `No connection for ${err.config.url} url`;
     case 'EEXIST':
