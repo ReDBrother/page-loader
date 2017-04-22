@@ -9,17 +9,17 @@ const trackingLoadResourses = (item, ...rest) => {
     return Promise.resolve('');
   }
 
-  const task = new Listr([{
+  const loading = new Listr([{
     title: item.url,
     task: (ctx, task) => item.load.then((info) => {
-       if (!info.success) {
-         const message = getErrorMessage(info.error);
-         task.skip(message);
-       }
+      if (!info.success) {
+        const message = getErrorMessage(info.error);
+        task.skip(message);
+      }
     }),
   }]);
 
-  return task.run().then(() => trackingLoadResourses(...rest));
+  return loading.run().then(() => trackingLoadResourses(...rest));
 };
 
 export default () => {
@@ -29,9 +29,8 @@ export default () => {
     .action((url, options) => {
       loadPage(url, options)
         .then(([htmlName, resourses]) => {
-          const result = trackingLoadResourses(...resourses).then(() => {
-             return htmlName;
-          });
+          const result = trackingLoadResourses(...resourses)
+            .then(() => htmlName);
 
           return result;
         })
