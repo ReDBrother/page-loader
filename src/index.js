@@ -67,7 +67,7 @@ const loadAssets = (currentUrl, dirPath, links) => {
     const fileName = getFileName(link);
     const srcUrl = url.resolve(currentUrl, link);
     const filePath = path.resolve(dirPath, fileName);
-    return axios({
+    const load = axios({
       method: 'get',
       url: srcUrl,
       responseType: 'stream',
@@ -80,7 +80,6 @@ const loadAssets = (currentUrl, dirPath, links) => {
         debugSaving('save file %s', path.basename(fileName));
         return {
           success: true,
-          url: srcUrl,
           fileName,
         };
       })
@@ -88,13 +87,14 @@ const loadAssets = (currentUrl, dirPath, links) => {
         debugSaving('file %s not saved', path.basename(srcUrl));
         return {
           success: false,
-          url: srcUrl,
           error,
         };
       });
+
+    return { url: srcUrl, load };
   });
 
-  return Promise.all(result);
+  return result;
 };
 
 export default (pageUrl, keys) => {
@@ -120,10 +120,8 @@ export default (pageUrl, keys) => {
     })
     .then((response) => {
       const links = getTagsSrc(response.data);
-      return loadAssets(pageUrl, dirPath, links);
-    })
-    .then((result) => {
-      debug('end loading and output of result');
-      return [htmlName, result];
+      const loadingAssets = loadAssets(pageUrl, dirPath, links);
+      debug('Output of result');
+      return [htmlName, loadingAssets];
     });
 };

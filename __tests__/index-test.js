@@ -56,13 +56,18 @@ describe('Loading page', () => {
       const filePath = `${output}${path.sep}${htmlName}`;
       const data = fs.readFileSync(filePath, 'utf8');
       expect(data).toBe(fileData1);
-      assets.forEach((item) => {
-        expect(item.success).toBe(true);
-        const assetPath = path.join(output, 'hexlet-io-page_files', item.fileName);
-        const exists = fs.existsSync(assetPath);
-        expect(exists).toBe(true);
-      });
-    }).catch(done.fail).then(done);
+      const loadingAssets = assets.map(item => item.load);
+      return Promise.all(loadingAssets);
+    })
+      .then((result) => {
+        result.forEach((asset) => {
+          expect(asset.success).toBe(true);
+          const assetPath = path.join(output, 'hexlet-io-page_files', asset.fileName);
+          const exists = fs.existsSync(assetPath);
+          expect(exists).toBe(true);
+        });
+        done();
+      }).catch(done.fail);
   });
 
   it('test wrong output directory', (done) => {
@@ -77,9 +82,12 @@ describe('Loading page', () => {
   it('test loading page with wrong link', (done) => {
     loadPage(pageWithWrongLinkUrl, { output }).then(([htmlName, assets]) => {
       expect(htmlName).toBe('hexlet-io-link.html');
-      const asset = assets[0];
-      expect(asset.success).toBe(false);
-    }).catch(done.fail).then(done);
+      return assets[0].load;
+    })
+      .then((asset) => {
+        expect(asset.success).toBe(false);
+        done();
+      }).catch(done.fail);
   });
 
   it('test wrong url', (done) => {
