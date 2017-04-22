@@ -4,6 +4,24 @@ import { version } from '../package.json';
 import loadPage from '.';
 import getErrorMessage from './lib/errors';
 
+const trackingLoadResourses = (item, ...rest) => {
+  if (!item) {
+    return Promise.resolve('');
+  }
+
+  const task = new Listr([{
+    title: item.url,
+    task: (ctx, task) => item.load.then((info) => {
+       if (!info.success) {
+         const message = getErrorMessage(info.error);
+         task.skip(message);
+       }
+    }),
+  }]);
+
+  return task.run().then(() => trackingLoadResourses(...rest));
+};
+
 export default () => {
   program
     .version(version)
@@ -11,23 +29,15 @@ export default () => {
     .action((url, options) => {
       loadPage(url, options)
         .then(([htmlName, resourses]) => {
-          const tasks = resourses.map((item) => {
-            const title = item.url;
-            return {
-              title,
-              task: (ctx, task) => item.load.then((info) => {
-                if (!info.success) {
-                  const message = getErrorMessage(info.error);
-                  task.skip(message);
-                }
-              }),
-            };
+          const result = trackingLoadResourses(...resourses).then(() => {
+             return htmlName;
           });
-          const trackingLoad = new Listr(tasks);
-          trackingLoad.run().then(() => {
-            console.log();
-            console.log(`Page was downloaded as ${htmlName}`);
-          });
+
+          return result;
+        })
+        .then((htmlName) => {
+          console.log();
+          console.log(`Page was downloaded as ${htmlName}`);
         })
         .catch((err) => {
           const message = getErrorMessage(err, options);
