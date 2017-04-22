@@ -1,6 +1,7 @@
 import program from 'commander';
 import { version } from '../package.json';
 import loadPage from '.';
+import getErrorMessage from './lib/errors';
 
 export default () => {
   program
@@ -15,7 +16,11 @@ export default () => {
           });
           console.log();
           console.log(`Page was downloaded as '${pageName}'`);
-        }).catch(console.error);
+        }).catch((err) => {
+          const message = getErrorMessage(err, options);
+          console.error(message);
+          process.exit(1);
+        });
     });
 
   const pwd = process.env.PWD;

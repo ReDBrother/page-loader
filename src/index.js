@@ -63,11 +63,11 @@ const getTagsSrc = (data) => {
 };
 
 const loadAssets = (currentUrl, dirPath, links) => {
-  const result = links.reduce((acc, link) => {
+  const result = links.map((link) => {
     const fileName = getFileName(link);
     const srcUrl = url.resolve(currentUrl, link);
     const filePath = path.resolve(dirPath, fileName);
-    const loadingAsset = axios({
+    return axios({
       method: 'get',
       url: srcUrl,
       responseType: 'stream',
@@ -83,9 +83,7 @@ const loadAssets = (currentUrl, dirPath, links) => {
           fileName,
         };
       });
-
-    return [...acc, loadingAsset];
-  }, []);
+  });
 
   return Promise.all(result);
 };
@@ -105,10 +103,11 @@ export default (pageUrl, keys) => {
       debug('load page %s', pageUrl);
       const newData = rewriteTags(response.data, dirName);
       const pagePath = path.resolve(output, htmlName);
-      return fs.writeFile(pagePath, newData, 'utf8').then(() => {
-        debugSaving('save page %s', pageUrl);
-        return response;
-      });
+      return fs.writeFile(pagePath, newData, 'utf8')
+        .then(() => {
+          debugSaving('save page %s', pageUrl);
+          return response;
+        });
     })
     .then((response) => {
       const links = getTagsSrc(response.data);
