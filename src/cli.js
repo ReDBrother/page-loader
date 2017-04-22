@@ -1,4 +1,5 @@
 import program from 'commander';
+import Listr from 'listr';
 import { version } from '../package.json';
 import loadPage from '.';
 import getErrorMessage from './lib/errors';
@@ -9,14 +10,28 @@ export default () => {
     .arguments('<url>')
     .action((url, options) => {
       loadPage(url, options)
-        .then(([pageName, filesInfo]) => {
-          filesInfo.forEach((item) => {
-            const flag = item.success ? '\u2714' : '\u2715';
-            console.log(`${flag} ${item.url}`);
+        .then(([htmlName, resourses]) => {
+          const tasks = resourses.map((item) => {
+            const title = item.url;
+            return {
+              title,
+              task: (ctx, task) => item.load.then((info) => {
+                if (!info.success) {
+                  const message = getErrorMessage(info.error);
+                  task.skip(message);
+                }
+
+                return info
+              }),
+            };
           });
-          console.log();
-          console.log(`Page was downloaded as '${pageName}'`);
-        }).catch((err) => {
+          const trackingLoad = new Listr(tasks);
+          trackingLoad.run().then(() => {
+            console.log();
+            console.log(`Page was downloaded as ${htmlName}`);
+          });
+        })
+        .catch((err) => {
           const message = getErrorMessage(err, options);
           console.error(message);
           process.exit(1);

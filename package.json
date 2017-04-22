@@ -1,6 +1,6 @@
 {
   "name": "rdb-page-loader",
-  "version": "0.1.7",
+  "version": "1.0.0",
   "main": "dist/index.js",
   "bin": {
     "page-loader": "dist/bin/page-loader.js"
@@ -37,7 +37,8 @@
     "eslint-config-airbnb-base": "*",
     "eslint-plugin-import": "*",
     "babel-eslint": "*",
-    "jest-cli": "*"
+    "jest-cli": "*",
+    "sloc": "^0.2.0"
   },
   "dependencies": {
     "axios": "*",
@@ -46,6 +47,6 @@
     "debug": "*",
     "mz": "*",
     "nock": "*",
-    "sloc": "^0.2.0"
+    "listr": "*"
   }
 }
