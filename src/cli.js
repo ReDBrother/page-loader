@@ -4,12 +4,8 @@ import { version } from '../package.json';
 import loadPage from '.';
 import getErrorMessage from './lib/errors';
 
-const trackingLoadResourses = (item, ...rest) => {
-  if (!item) {
-    return Promise.resolve('');
-  }
-
-  const loading = new Listr([{
+const getTask = (item) => {
+  const result = {
     title: item.url,
     task: (ctx, task) => item.load.then((info) => {
       if (!info.success) {
@@ -17,9 +13,9 @@ const trackingLoadResourses = (item, ...rest) => {
         task.skip(message);
       }
     }),
-  }]);
+  };
 
-  return loading.run().then(() => trackingLoadResourses(...rest));
+  return result;
 };
 
 export default () => {
@@ -29,10 +25,17 @@ export default () => {
     .action((url, options) => {
       loadPage(url, options)
         .then(([htmlName, resourses]) => {
-          const result = trackingLoadResourses(...resourses)
-            .then(() => htmlName);
+          const tasks = resourses.map(getTask);
+          const trackingLoadResourses = (task, ...rest) => {
+            if (!task) {
+              return Promise.resolve(htmlName);
+            }
 
-          return result;
+            const tracking = new Listr([task]);
+            return tracking.run().then(() => trackingLoadResourses(...rest));
+          };
+
+          return trackingLoadResourses(...tasks);
         })
         .then((htmlName) => {
           console.log();
