@@ -50,51 +50,57 @@ describe('Loading page', () => {
     output = fs.mkdtempSync(`${tmpDir}${path.sep}`);
   });
 
-  it('test loading page', (done) => {
-    loadPage(pageUrl, { output }).then(([htmlName, assets]) => {
+  it('test loading page', async (done) => {
+    try {
+      const { htmlName, resourses } = await loadPage(pageUrl, output);
       expect(htmlName).toBe('hexlet-io-page.html');
       const filePath = `${output}${path.sep}${htmlName}`;
       const data = fs.readFileSync(filePath, 'utf8');
       expect(data).toBe(fileData1);
-      const loadingAssets = assets.map(item => item.load);
-      return Promise.all(loadingAssets);
-    })
-      .then((result) => {
-        result.forEach((asset) => {
-          expect(asset.success).toBe(true);
-          const assetPath = path.join(output, 'hexlet-io-page_files', asset.fileName);
-          const exists = fs.existsSync(assetPath);
-          expect(exists).toBe(true);
-        });
-        done();
-      }).catch(done.fail);
-  });
-
-  it('test wrong output directory', (done) => {
-    loadPage(pageUrl, { output: 'blabla' }).then(done.fail)
-      .catch((err) => {
-        expect(err.code).toBe('ENOENT');
-        expect(err.syscall).toBe('mkdir');
-        done();
+      const loadingAssets = resourses.map(item => item.load);
+      const result = await Promise.all(loadingAssets);
+      result.forEach((asset) => {
+        expect(asset.success).toBe(true);
+        const assetPath = path.join(output, 'hexlet-io-page_files', asset.fileName);
+        const exists = fs.existsSync(assetPath);
+        expect(exists).toBe(true);
       });
+      done();
+    } catch (err) {
+      done.fail(err);
+    }
   });
 
-  it('test loading page with wrong link', (done) => {
-    loadPage(pageWithWrongLinkUrl, { output }).then(([htmlName, assets]) => {
+  it('test wrong output directory', async (done) => {
+    try {
+      await loadPage(pageUrl, 'blabla');
+      done.fail();
+    } catch (err) {
+      expect(err.code).toBe('ENOENT');
+      expect(err.syscall).toBe('mkdir');
+      done();
+    }
+  });
+
+  it('test loading page with wrong link', async (done) => {
+    try {
+      const { htmlName, resourses } = await loadPage(pageWithWrongLinkUrl, output);
       expect(htmlName).toBe('hexlet-io-link.html');
-      return assets[0].load;
-    })
-      .then((asset) => {
-        expect(asset.success).toBe(false);
-        done();
-      }).catch(done.fail);
+      const asset = await resourses[0].load;
+      expect(asset.success).toBe(false);
+      done();
+    } catch (err) {
+      done.fail(err);
+    }
   });
 
-  it('test wrong url', (done) => {
-    loadPage(wrongUrl, { output }).then(done.fail)
-      .catch((err) => {
-        expect(err.status).toBe(404);
-        done();
-      });
+  it('test wrong url', async (done) => {
+    try {
+      await loadPage(wrongUrl, output);
+      done.fail();
+    } catch (err) {
+      expect(err.status).toBe(404);
+      done();
+    }
   });
 });

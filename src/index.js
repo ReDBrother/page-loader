@@ -18,14 +18,14 @@ const tags = [
 const getFileName = (str) => {
   const { dir, name, ext } = path.parse(str);
   const newStr = path.join(dir, name);
-  const result = newStr.replace(/\W/g, '-');
+  const result = newStr.replace(/[^0-9a-z]+/gi, '-');
   return `${result}${ext}`;
 };
 
 const getPageName = (currentUrl) => {
   const { hostname, pathname } = url.parse(currentUrl);
   const str = `${hostname}${pathname}`;
-  return str.replace(/\W/g, '-');
+  return str.replace(/[^0-9a-z]+/gi, '-');
 };
 
 const rewriteTags = (data, dirName) => {
@@ -67,61 +67,42 @@ const loadAssets = (currentUrl, dirPath, links) => {
     const fileName = getFileName(link);
     const srcUrl = url.resolve(currentUrl, link);
     const filePath = path.resolve(dirPath, fileName);
-    const load = axios({
-      method: 'get',
-      url: srcUrl,
-      responseType: 'stream',
-    })
-      .then((response) => {
+    const load = async () => {
+      try {
+        const response = await axios.get(srcUrl, {
+          responseType: 'stream',
+        });
         debugLoading('load file %s', path.basename(srcUrl));
         response.data.pipe(fs.createWriteStream(filePath));
-      })
-      .then(() => {
         debugSaving('save file %s', path.basename(fileName));
-        return {
-          success: true,
-          fileName,
-        };
-      })
-      .catch((error) => {
+        return { success: true, fileName };
+      } catch (error) {
         debugSaving('file %s not saved', path.basename(srcUrl));
-        return {
-          success: false,
-          error,
-        };
-      });
+        return { success: false, error };
+      }
+    };
 
-    return { url: srcUrl, load };
+    return { url: srcUrl, load: load() };
   });
 
   return result;
 };
 
-export default (pageUrl, keys) => {
-  const { output } = keys;
+export default async (pageUrl, output) => {
   const pageName = getPageName(pageUrl);
   const htmlName = `${pageName}.html`;
   const dirName = `${pageName}_files`;
   const dirPath = path.join(output, dirName);
-  return fs.mkdir(dirPath)
-    .then(() => {
-      debug('create folder %s', dirName);
-      return axios.get(pageUrl);
-    })
-    .then((response) => {
-      debug('load page %s', pageUrl);
-      const newData = rewriteTags(response.data, dirName);
-      const pagePath = path.resolve(output, htmlName);
-      return fs.writeFile(pagePath, newData, 'utf8')
-        .then(() => {
-          debugSaving('save page %s', pageUrl);
-          return response;
-        });
-    })
-    .then((response) => {
-      const links = getTagsSrc(response.data);
-      const loadingAssets = loadAssets(pageUrl, dirPath, links);
-      debug('Output of result');
-      return [htmlName, loadingAssets];
-    });
+  await fs.mkdir(dirPath);
+  debug('create folder %s', dirName);
+  const response = await axios.get(pageUrl);
+  debug('load page %s', pageUrl);
+  const newData = rewriteTags(response.data, dirName);
+  const pagePath = path.resolve(output, htmlName);
+  await fs.writeFile(pagePath, newData, 'utf8');
+  debugSaving('save page %s', pageUrl);
+  const links = getTagsSrc(response.data);
+  const loadingAssets = loadAssets(pageUrl, dirPath, links);
+  debug('Output of result');
+  return { htmlName, resourses: loadingAssets };
 };
