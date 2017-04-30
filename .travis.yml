@@ -2,4 +2,12 @@ language: node_js
 node_js:
   - stable
 
-script: make lint test
+script: make lint test-coverage
+
+addons:
+  code_climate:
+    repo_token: e6ba3f4984df88142d087efa5d986ccd900ce4a00218a8acef1ac85bf10897df
+
+after_success:
+  - npm install -g codeclimate-test-reporter
+  - codeclimate-test-reporter < coverage/lcov.info

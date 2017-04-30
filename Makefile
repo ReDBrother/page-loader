@@ -8,4 +8,6 @@ publish:
 	npm publish
 lint:
 	npm run eslint -- src __tests__
+test-coverage:
+	npm run coverage
 
